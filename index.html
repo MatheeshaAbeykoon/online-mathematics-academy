@@ -107,6 +107,12 @@
                         <span>Quizzes</span>
                     </a>
                 </li>
+                <li class="menu-item" data-view="tutorials">
+                    <a href="#tutorials">
+                        <i data-lucide="file-text" class="menu-icon"></i>
+                        <span>Tutorials</span>
+                    </a>
+                </li>
                 <li class="menu-item" data-view="tools">
                     <a href="#tools">
                         <i data-lucide="calculator" class="menu-icon"></i>
@@ -126,11 +132,15 @@
                     <div class="avatar" id="sidebar-avatar">ST</div>
                     <div class="user-details">
                         <span class="user-name" id="sidebar-user-name">Guest Student</span>
-                        <span class="user-role">Mathematics Scholar</span>
+                        <span class="user-role" id="sidebar-user-role">Mathematics Scholar</span>
                     </div>
                     <button class="logout-btn" id="logout-button" title="Log Out">
                         <i data-lucide="log-out"></i>
                     </button>
+                </div>
+                <div id="admin-badge" class="admin-badge" style="display:none;">
+                    <i data-lucide="shield-check"></i>
+                    <span>Admin Panel Active</span>
                 </div>
             </div>
         </aside>
@@ -334,6 +344,87 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- VIEW 6: TUTORIALS -->
+                <div id="view-tutorials" class="spa-view" style="display: none;">
+
+                    <!-- Admin Upload Panel (hidden for students) -->
+                    <div id="admin-upload-panel" class="tute-admin-panel glass" style="display:none;">
+                        <div class="tute-admin-header">
+                            <div class="tute-admin-title">
+                                <div class="admin-icon-badge"><i data-lucide="upload-cloud"></i></div>
+                                <div>
+                                    <h3>Upload Tutorial</h3>
+                                    <p>Add PDF or document tutorials for students</p>
+                                </div>
+                            </div>
+                        </div>
+                        <form id="tute-upload-form" class="tute-upload-form">
+                            <div class="tute-form-row">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label" for="tute-title">Tutorial Title</label>
+                                    <input class="form-input" style="padding-left:15px;" type="text" id="tute-title" placeholder="e.g. Calculus Cheat Sheet" required>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label" for="tute-category">Category</label>
+                                    <select class="form-input" style="padding-left:15px;" id="tute-category">
+                                        <option value="Algebra">Algebra</option>
+                                        <option value="Trigonometry">Trigonometry</option>
+                                        <option value="Calculus">Calculus</option>
+                                        <option value="Statistics">Statistics</option>
+                                        <option value="General">General</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="tute-description">Description</label>
+                                <textarea class="form-input tute-textarea" id="tute-description" placeholder="Brief description of this tutorial..." style="padding-left:15px; resize:vertical;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Upload File (PDF, DOCX, TXT — max 5MB)</label>
+                                <div class="tute-drop-zone" id="tute-drop-zone">
+                                    <i data-lucide="file-up" style="width:40px;height:40px;color:var(--primary);margin-bottom:10px;"></i>
+                                    <p>Drag & drop file here, or <strong style="color:var(--primary);cursor:pointer;" id="tute-browse-trigger">browse</strong></p>
+                                    <p id="tute-file-name" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">No file selected</p>
+                                    <input type="file" id="tute-file-input" accept=".pdf,.doc,.docx,.txt,.ppt,.pptx" style="display:none;">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="tute-upload-btn" style="width:100%;">
+                                <i data-lucide="upload"></i>
+                                <span>Upload Tutorial</span>
+                            </button>
+                            <p id="tute-upload-feedback" style="margin-top:10px;font-weight:600;display:none;"></p>
+                        </form>
+                    </div>
+
+                    <!-- All Tutorials Grid -->
+                    <div class="tute-section-header">
+                        <div>
+                            <h3 class="tute-section-title">Available Tutorials</h3>
+                            <p class="tute-section-sub">Download study materials uploaded by your instructor</p>
+                        </div>
+                        <div class="tute-filter-bar">
+                            <button class="tute-filter-btn active" data-filter="All">All</button>
+                            <button class="tute-filter-btn" data-filter="Algebra">Algebra</button>
+                            <button class="tute-filter-btn" data-filter="Trigonometry">Trigonometry</button>
+                            <button class="tute-filter-btn" data-filter="Calculus">Calculus</button>
+                            <button class="tute-filter-btn" data-filter="Statistics">Statistics</button>
+                            <button class="tute-filter-btn" data-filter="General">General</button>
+                        </div>
+                    </div>
+
+                    <div class="tute-grid" id="tutorials-grid">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="tute-empty-state" class="tute-empty" style="display:none;">
+                        <i data-lucide="inbox" style="width:64px;height:64px;color:var(--text-muted);margin-bottom:15px;"></i>
+                        <h4>No Tutorials Yet</h4>
+                        <p>The admin hasn't uploaded any tutorials yet. Check back soon!</p>
+                    </div>
+
                 </div>
 
                 <!-- VIEW 4: GRAPHING CALCULATOR / TOOLS -->
