@@ -198,14 +198,131 @@ const FORMULAS_DATABASE = [
     { name: "Euler's Identity", formula: "e^{i\\pi} + 1 = 0" }
 ];
 
+// Seed Datasets for Zoom, WhatsApp, and Class Recordings
+const INITIAL_ZOOM_CLASSES = [
+    {
+        id: "zoom-1",
+        title: "2024 Theory - Pure Mathematics (Integration)",
+        time: "Every Sunday | 8:00 AM - 12:00 PM",
+        status: "LIVE NOW",
+        meetingId: "845 2910 4432",
+        passcode: "MATHS2024",
+        url: "https://zoom.us/j/84529104432?pwd=MATHS2024",
+        instructor: "Mr. Matheesha Abeykoon"
+    },
+    {
+        id: "zoom-2",
+        title: "2025 Theory - Trigonometry & Vectors",
+        time: "Every Wednesday | 6:00 PM - 9:00 PM",
+        status: "Upcoming",
+        meetingId: "912 4051 8830",
+        passcode: "TRIG2025",
+        url: "https://zoom.us/j/91240518830?pwd=TRIG2025",
+        instructor: "Mr. Matheesha Abeykoon"
+    },
+    {
+        id: "zoom-3",
+        title: "Revision & Speed Paper Class",
+        time: "Every Friday | 7:00 PM - 10:00 PM",
+        status: "Upcoming",
+        meetingId: "732 9901 1245",
+        passcode: "PAPER2026",
+        url: "https://zoom.us/j/73299011245?pwd=PAPER2026",
+        instructor: "Mr. Matheesha Abeykoon"
+    }
+];
+
+const INITIAL_WHATSAPP_GROUPS = [
+    {
+        id: "wa-1",
+        name: "2024 Combined Maths Theory",
+        batch: "2024 A/L Batch",
+        desc: "Official group for 2024 Theory. Daily class announcements, Zoom links & model paper PDF links.",
+        members: "850+ Members",
+        url: "https://chat.whatsapp.com/ExampleGroup2024"
+    },
+    {
+        id: "wa-2",
+        name: "2025 Combined Maths Theory",
+        batch: "2025 A/L Batch",
+        desc: "Main discussion and homework submission group for 2025 Theory batch.",
+        members: "1,200+ Members",
+        url: "https://chat.whatsapp.com/ExampleGroup2025"
+    },
+    {
+        id: "wa-3",
+        name: "2026 Revision & Paper Class",
+        batch: "Revision Batch",
+        desc: "High-yield paper discussions, model paper answers, and targeted revision guidance.",
+        members: "640+ Members",
+        url: "https://chat.whatsapp.com/ExampleGroupRevision"
+    },
+    {
+        id: "wa-4",
+        name: "AB Mathematics Main Channel",
+        batch: "All Batches",
+        desc: "General notification channel for all registered academy students.",
+        members: "2,500+ Members",
+        url: "https://chat.whatsapp.com/ExampleGroupAnnounce"
+    }
+];
+
+const INITIAL_RECORDINGS = [
+    {
+        id: "rec-1",
+        title: "Calculus - Integration by Parts & Definite Integrals",
+        category: "Calculus",
+        duration: "2h 45m",
+        date: "Aug 02, 2026",
+        desc: "Comprehensive step-by-step lecture covering reduction formulas, definite integrals, and area calculations.",
+        streamUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        downloadUrl: "https://drive.google.com/uc?export=download&id=sample_integration_recording"
+    },
+    {
+        id: "rec-2",
+        title: "Trigonometry - Compound Angles & General Solutions",
+        category: "Trigonometry",
+        duration: "2h 15m",
+        date: "Jul 28, 2026",
+        desc: "Complete derivation of sine and cosine compound identities with past paper problem walkthroughs.",
+        streamUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        downloadUrl: "https://drive.google.com/uc?export=download&id=sample_trig_recording"
+    },
+    {
+        id: "rec-3",
+        title: "Algebra - Polynomial Roots & Partial Fractions",
+        category: "Algebra",
+        duration: "1h 50m",
+        date: "Jul 21, 2026",
+        desc: "Decomposition into partial fractions and remainder theorem applications for advanced algebra.",
+        streamUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        downloadUrl: "https://drive.google.com/uc?export=download&id=sample_algebra_recording"
+    },
+    {
+        id: "rec-4",
+        title: "Applied Maths - Relative Velocity & Vector Kinematics",
+        category: "Applied Maths",
+        duration: "2h 30m",
+        date: "Jul 14, 2026",
+        desc: "Vector resolution, relative motion diagrams, and shortest distance calculation problems.",
+        streamUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        downloadUrl: "https://drive.google.com/uc?export=download&id=sample_applied_recording"
+    }
+];
+
 // 2. STATE MANAGER
 const State = {
     user: null,
     currentView: "dashboard",
     theme: "violet",
+    mode: "dark", // default dark theme
     streak: 3,
     completedLessons: ["algebra-0"], // stores lessonId-sectionIdx
     scores: {}, // stores quizId: pctScore
+    tutorials: [], // stores uploaded tutorial objects
+    zoomClasses: [],
+    whatsappGroups: [],
+    recordings: [],
     activeCourseId: null,
     activeSectionIndex: 0,
     activeQuizId: null,
@@ -214,17 +331,41 @@ const State = {
     quizSecondsElapsed: 0,
     quizTimerInterval: null,
     selectedQuizOption: null,
+    activeTuteFilter: "All",
+    activeTuteTypeFilter: "All",
+    activeRecFilter: "All",
+    recSearchQuery: "",
+
+    // Returns true if the current user is an admin
+    isAdmin() {
+        if (!this.user) return false;
+        const email = (this.user.email || "").toLowerCase();
+        return email.startsWith("admin");
+    },
     
     // Save to local storage
     save() {
         const payload = {
             user: this.user,
             theme: this.theme,
+            mode: this.mode,
             streak: this.streak,
             completedLessons: this.completedLessons,
-            scores: this.scores
+            scores: this.scores,
+            zoomClasses: this.zoomClasses,
+            whatsappGroups: this.whatsappGroups,
+            recordings: this.recordings
         };
         localStorage.setItem("abmathematics_state", JSON.stringify(payload));
+    },
+
+    // Save tutorials separately (can be large due to base64)
+    saveTutorials() {
+        try {
+            localStorage.setItem("abmathematics_tutorials", JSON.stringify(this.tutorials));
+        } catch(e) {
+            console.error("Tutorial storage failed (file may be too large):", e);
+        }
     },
     
     // Load from local storage
@@ -235,12 +376,86 @@ const State = {
                 const parsed = JSON.parse(raw);
                 this.user = parsed.user || null;
                 this.theme = parsed.theme || "violet";
+                this.mode = parsed.mode || "dark";
                 this.streak = parsed.streak || 3;
                 this.completedLessons = parsed.completedLessons || [];
                 this.scores = parsed.scores || {};
+                this.zoomClasses = parsed.zoomClasses || INITIAL_ZOOM_CLASSES;
+                this.whatsappGroups = parsed.whatsappGroups || INITIAL_WHATSAPP_GROUPS;
+                this.recordings = parsed.recordings || INITIAL_RECORDINGS;
             } catch (e) {
                 console.error("Failed to parse stored state:", e);
             }
+        } else {
+            this.zoomClasses = INITIAL_ZOOM_CLASSES;
+            this.whatsappGroups = INITIAL_WHATSAPP_GROUPS;
+            this.recordings = INITIAL_RECORDINGS;
+        }
+
+        // Load tutorials
+        const rawTutes = localStorage.getItem("abmathematics_tutorials");
+        if (rawTutes) {
+            try {
+                this.tutorials = JSON.parse(rawTutes) || [];
+            } catch(e) {
+                this.tutorials = [];
+            }
+        }
+        
+        // Initialize mock data if storage is empty
+        if (this.tutorials.length === 0) {
+            const dummyDataUrl = "data:text/plain;base64,U2FtcGxlIERvY3VtZW50IENvbnRlbnQgLSBBYiBNYXRoZW1hdGljcw==";
+            this.tutorials = [
+                {
+                    id: "mock-1",
+                    title: "2025 Mid-Year Algebra Exam Paper",
+                    category: "Algebra",
+                    type: "Paper",
+                    description: "Complete past exam paper covering linear equations, quadratic formulas, and algebra fundamentals.",
+                    fileName: "2025_Algebra_MidYear_Exam.pdf",
+                    fileSize: 1258291,
+                    fileType: "pdf",
+                    dataUrl: dummyDataUrl,
+                    uploadedAt: "Jun 15, 2026"
+                },
+                {
+                    id: "mock-2",
+                    title: "Calculus Limits Reference Guide",
+                    category: "Calculus",
+                    type: "Tutorial",
+                    description: "Step-by-step tutorial explaining limit calculation, indeterminate forms, and basic rules of calculus.",
+                    fileName: "Limits_Reference_Guide.pdf",
+                    fileSize: 860160,
+                    fileType: "pdf",
+                    dataUrl: dummyDataUrl,
+                    uploadedAt: "Jun 20, 2026"
+                },
+                {
+                    id: "mock-3",
+                    title: "Trigonometric Waveforms Worksheet",
+                    category: "Trigonometry",
+                    type: "Tutorial",
+                    description: "Practice worksheet with exercises on graphing sine/cosine functions and amplitude/period modulation.",
+                    fileName: "Trig_Waveforms_Worksheet.docx",
+                    fileSize: 460800,
+                    fileType: "docx",
+                    dataUrl: dummyDataUrl,
+                    uploadedAt: "Jun 22, 2026"
+                },
+                {
+                    id: "mock-4",
+                    title: "2024 Final Statistics Exam & Solutions",
+                    category: "Statistics",
+                    type: "Paper",
+                    description: "Official 2024 end-of-year statistics exam with complete step-by-step marking scheme and answer key.",
+                    fileName: "2024_Final_Statistics_Exam.pdf",
+                    fileSize: 1887436,
+                    fileType: "pdf",
+                    dataUrl: dummyDataUrl,
+                    uploadedAt: "May 10, 2026"
+                }
+            ];
+            this.saveTutorials();
         }
     }
 };
@@ -546,6 +761,7 @@ const App = {
     init() {
         State.load();
         this.applyTheme(State.theme);
+        this.applyMode(State.mode);
         
         this.bindAuthEvents();
         this.bindNavigation();
@@ -554,6 +770,11 @@ const App = {
         this.bindQuizEvents();
         this.bindToolEvents();
         this.bindSettingsEvents();
+        this.bindTutorialsEvents();
+        this.bindZoomEvents();
+        this.bindWhatsAppEvents();
+        this.bindRecordingsEvents();
+        this.bindVideoModalEvents();
         
         // Show app shell if user is logged in
         if (State.user) {
@@ -565,10 +786,11 @@ const App = {
         lucide.createIcons();
     },
     
-    // Themes management
+    // Theme accent management
     applyTheme(themeName) {
         document.body.setAttribute('data-theme', themeName);
         State.theme = themeName;
+        State.save();
         
         // Update active class in settings theme boxes
         document.querySelectorAll('.theme-button').forEach(btn => {
@@ -582,6 +804,25 @@ const App = {
         // Redraw canvas if active to match colors
         if (State.currentView === "tools") {
             Grapher.draw();
+        }
+    },
+
+    // Mode management (Dark vs Light theme)
+    applyMode(modeName) {
+        document.body.setAttribute('data-mode', modeName);
+        State.mode = modeName;
+        State.save();
+        
+        const darkBtn = document.getElementById('mode-btn-dark');
+        const lightBtn = document.getElementById('mode-btn-light');
+        if (darkBtn && lightBtn) {
+            if (modeName === 'dark') {
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
+            } else {
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
+            }
         }
     },
 
@@ -603,6 +844,11 @@ const App = {
         
         // Sync setting page fields
         document.getElementById('settings-username').value = State.user.name;
+
+        // Show admin badge & role label based on role
+        const isAdmin = State.isAdmin();
+        document.getElementById('admin-badge').style.display = isAdmin ? 'flex' : 'none';
+        document.getElementById('sidebar-user-role').textContent = isAdmin ? 'Administrator' : 'Mathematics Scholar';
 
         // Render default dashboard view
         this.switchView("dashboard");
@@ -637,6 +883,18 @@ const App = {
             titleElem.textContent = `Welcome back, ${State.user.name}!`;
             subElem.textContent = "Explore your math modules and dashboard highlights.";
             this.renderDashboard();
+        } else if (viewId === "zoom") {
+            titleElem.textContent = "Zoom Online Live Classes";
+            subElem.textContent = "Access official live class links, meeting IDs, and passcodes for your interactive lectures.";
+            this.renderZoomClasses();
+        } else if (viewId === "whatsapp") {
+            titleElem.textContent = "Official WhatsApp Groups";
+            subElem.textContent = "Join your official batch WhatsApp group to receive daily announcements and materials.";
+            this.renderWhatsAppGroups();
+        } else if (viewId === "recordings") {
+            titleElem.textContent = "Class Video Recordings";
+            subElem.textContent = "Watch past recorded lectures online or download video files directly for offline study.";
+            this.renderRecordings();
         } else if (viewId === "lessons") {
             titleElem.textContent = "Mathematics Course Catalog";
             subElem.textContent = "Step-by-step math interactive guides across major disciplines.";
@@ -645,6 +903,12 @@ const App = {
             titleElem.textContent = "Assessment Portal";
             subElem.textContent = "Test your skills with interactive immediate-evaluation quizzes.";
             this.renderQuizzesGrid();
+        } else if (viewId === "tutorials") {
+            titleElem.textContent = "Papers & Tutes Library";
+            subElem.textContent = State.isAdmin()
+                ? "Upload and manage past papers and tutorials for your students."
+                : "Browse and download past papers and study materials from your instructor.";
+            this.renderTutorialsView();
         } else if (viewId === "tools") {
             titleElem.textContent = "Interactive Function Plotter";
             subElem.textContent = "Plot equations dynamically, explore limits, and inspect Cartesian points.";
@@ -654,7 +918,8 @@ const App = {
             }, 50);
         } else if (viewId === "settings") {
             titleElem.textContent = "LMS Configuration";
-            subElem.textContent = "Personalise your profile dashboard and lighting interface glow.";
+            subElem.textContent = "Personalise your profile dashboard, light mode / dark mode theme, and lighting interface glow.";
+            this.applyMode(State.mode);
         }
         
         lucide.createIcons();
@@ -1215,12 +1480,19 @@ const App = {
 
     // 12. SETTINGS MODULE
     bindSettingsEvents() {
-        // Theme button click selector
+        // Theme button click selector (Accent colors)
         document.querySelectorAll('.theme-button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const selectedTheme = btn.getAttribute('data-theme');
                 this.applyTheme(selectedTheme);
-                State.save();
+            });
+        });
+
+        // Mode selector (Dark vs Light theme)
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const selectedMode = btn.getAttribute('data-mode-select');
+                this.applyMode(selectedMode);
             });
         });
 
@@ -1234,6 +1506,671 @@ const App = {
                 alert("Settings saved successfully!");
             }
         });
+    },
+
+    // 13. TUTORIALS MODULE
+    bindTutorialsEvents() {
+        const fileInput  = document.getElementById('tute-file-input');
+        const dropZone   = document.getElementById('tute-drop-zone');
+        const browseTrig = document.getElementById('tute-browse-trigger');
+        const form       = document.getElementById('tute-upload-form');
+
+        // Browse trigger clicks the hidden input
+        browseTrig.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', (e) => {
+            if (e.target !== browseTrig) fileInput.click();
+        });
+
+        // File selected via picker
+        fileInput.addEventListener('change', () => {
+            this._handleTuteFileSelect(fileInput.files[0]);
+        });
+
+        // Drag & drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput._droppedFile = file;
+                this._handleTuteFileSelect(file);
+            }
+        });
+
+        // Upload form submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this._uploadTutorial();
+        });
+
+        // Category filter buttons
+        document.querySelectorAll('.tute-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tute-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                State.activeTuteFilter = btn.getAttribute('data-filter');
+                this._renderTuteGrid();
+            });
+        });
+
+        // Type filter buttons
+        document.querySelectorAll('.tute-type-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tute-type-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                State.activeTuteTypeFilter = btn.getAttribute('data-type-filter');
+                this._renderTuteGrid();
+            });
+        });
+    },
+
+    // Helper: show selected file name in drop zone
+    _handleTuteFileSelect(file) {
+        if (!file) return;
+        const maxSize = 5 * 1024 * 1024; // 5 MB
+        if (file.size > maxSize) {
+            this._tuteFeedback('File exceeds 5 MB limit. Please choose a smaller file.', false);
+            return;
+        }
+        document.getElementById('tute-file-name').textContent = `${file.name} (${this._formatBytes(file.size)})`;
+        // Store reference
+        this._pendingTuteFile = file;
+    },
+
+    // Admin: read file as DataURL then persist to State.tutorials
+    _uploadTutorial() {
+        const type    = document.getElementById('tute-type').value;
+        const title   = document.getElementById('tute-title').value.trim();
+        const category= document.getElementById('tute-category').value;
+        const desc    = document.getElementById('tute-description').value.trim();
+        const file    = this._pendingTuteFile;
+        const feedback= document.getElementById('tute-upload-feedback');
+
+        if (!title) { this._tuteFeedback('Please enter a title.', false); return; }
+        if (!file)  { this._tuteFeedback('Please select a file to upload.', false); return; }
+
+        // Disable submit while reading
+        const btn = document.getElementById('tute-upload-btn');
+        btn.disabled = true;
+        btn.querySelector('span').textContent = 'Uploading…';
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const tutorial = {
+                id: Date.now().toString(),
+                title,
+                category,
+                type,
+                description: desc || 'No description provided.',
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.name.split('.').pop().toLowerCase(),
+                dataUrl: e.target.result,
+                uploadedAt: new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })
+            };
+
+            State.tutorials.unshift(tutorial); // newest first
+            State.saveTutorials();
+
+            // Reset form
+            document.getElementById('tute-upload-form').reset();
+            document.getElementById('tute-file-name').textContent = 'No file selected';
+            this._pendingTuteFile = null;
+            btn.disabled = false;
+            btn.querySelector('span').textContent = 'Upload Tutorial';
+
+            this._tuteFeedback(`✅ "${title}" uploaded successfully!`, true);
+            this._renderTuteGrid();
+            lucide.createIcons();
+        };
+        reader.onerror = () => {
+            btn.disabled = false;
+            btn.querySelector('span').textContent = 'Upload Tutorial';
+            this._tuteFeedback('Failed to read file. Please try again.', false);
+        };
+        reader.readAsDataURL(file);
+    },
+
+    // Show/hide the upload panel and render the tutorial grid
+    renderTutorialsView() {
+        const adminPanel = document.getElementById('admin-upload-panel');
+        adminPanel.style.display = State.isAdmin() ? 'block' : 'none';
+
+        // Reset category filter
+        State.activeTuteFilter = 'All';
+        document.querySelectorAll('.tute-filter-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-filter') === 'All');
+        });
+
+        // Reset type filter
+        State.activeTuteTypeFilter = 'All';
+        document.querySelectorAll('.tute-type-filter-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-type-filter') === 'All');
+        });
+
+        this._renderTuteGrid();
+        lucide.createIcons();
+    },
+
+    _renderTuteGrid() {
+        const grid = document.getElementById('tutorials-grid');
+        const empty= document.getElementById('tute-empty-state');
+        const catFilter = State.activeTuteFilter;
+        const typeFilter = State.activeTuteTypeFilter;
+
+        const filtered = State.tutorials.filter(t => {
+            const matchesCategory = (catFilter === 'All' || t.category === catFilter);
+            const itemType = t.type || 'Tutorial';
+            const matchesType = (typeFilter === 'All' || itemType === typeFilter);
+            return matchesCategory && matchesType;
+        });
+
+        grid.innerHTML = '';
+
+        if (filtered.length === 0) {
+            empty.style.display = 'flex';
+            lucide.createIcons();
+            return;
+        }
+
+        empty.style.display = 'none';
+        const isAdmin = State.isAdmin();
+
+        filtered.forEach(t => {
+            const iconClass = this._tuteIconClass(t.fileType);
+            const iconLabel = t.fileType.toUpperCase();
+            const sizeStr   = this._formatBytes(t.fileSize);
+            const itemType  = t.type || 'Tutorial';
+            const typeBadgeClass = itemType === 'Paper' ? 'badge-paper' : 'badge-tutorial';
+
+            const card = document.createElement('div');
+            card.className = 'tute-card glass';
+            card.innerHTML = `
+                <div class="tute-card-top">
+                    <div class="tute-file-icon ${iconClass}">${iconLabel}</div>
+                    <div class="tute-card-info">
+                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                            <span class="tute-card-type ${typeBadgeClass}">${itemType}</span>
+                            <span class="tute-card-category">${t.category}</span>
+                        </div>
+                        <div class="tute-card-title" title="${t.title}">${t.title}</div>
+                        <div class="tute-card-filename" title="${t.fileName}">${t.fileName}</div>
+                    </div>
+                </div>
+                <div class="tute-card-body">
+                    <p class="tute-card-desc">${t.description}</p>
+                </div>
+                <div class="tute-card-footer">
+                    <div class="tute-card-meta">
+                        <span class="tute-card-date">📅 ${t.uploadedAt}</span>
+                        <span class="tute-card-size">💾 ${sizeStr}</span>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        ${isAdmin ? `<button class="tute-delete-btn" data-id="${t.id}"><i data-lucide="trash-2"></i> Delete</button>` : ''}
+                        <button class="tute-download-btn" data-id="${t.id}">
+                            <i data-lucide="download"></i> Download
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Download handler
+            card.querySelector('.tute-download-btn').addEventListener('click', () => {
+                this._downloadTutorial(t);
+            });
+
+            // Delete handler (admin only)
+            if (isAdmin) {
+                card.querySelector('.tute-delete-btn').addEventListener('click', () => {
+                    if (confirm(`Delete "${t.title}"? This cannot be undone.`)) {
+                        State.tutorials = State.tutorials.filter(x => x.id !== t.id);
+                        State.saveTutorials();
+                        this._renderTuteGrid();
+                        lucide.createIcons();
+                    }
+                });
+            }
+
+            grid.appendChild(card);
+        });
+
+        lucide.createIcons();
+    },
+
+    // Trigger a browser download from the stored dataURL
+    _downloadTutorial(tutorial) {
+        const a = document.createElement('a');
+        a.href = tutorial.dataUrl;
+        a.download = tutorial.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    },
+
+    // Determine CSS class for file icon based on extension
+    _tuteIconClass(ext) {
+        if (ext === 'pdf') return 'pdf';
+        if (['doc','docx'].includes(ext)) return 'doc';
+        if (ext === 'txt') return 'txt';
+        if (['ppt','pptx'].includes(ext)) return 'ppt';
+        return 'other';
+    },
+
+    // Format bytes to human readable
+    _formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    },
+
+    // Show upload feedback message
+    _tuteFeedback(msg, success) {
+        const el = document.getElementById('tute-upload-feedback');
+        el.textContent = msg;
+        el.style.color = success ? 'var(--success)' : 'var(--danger)';
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 4000);
+    },
+
+    // 14. ZOOM LIVE CLASSES MODULE
+    bindZoomEvents() {
+        const form = document.getElementById('zoom-create-form');
+        if (!form) return;
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('zoom-input-title').value.trim();
+            const time = document.getElementById('zoom-input-time').value.trim();
+            const status = document.getElementById('zoom-input-status').value;
+            const meetingId = document.getElementById('zoom-input-mid').value.trim();
+            const passcode = document.getElementById('zoom-input-pass').value.trim();
+            const url = document.getElementById('zoom-input-url').value.trim();
+
+            if (!title || !url) return;
+
+            const newZoom = {
+                id: 'zoom-' + Date.now(),
+                title,
+                time,
+                status,
+                meetingId,
+                passcode,
+                url,
+                instructor: State.user ? State.user.name : "Instructor"
+            };
+
+            State.zoomClasses.unshift(newZoom);
+            State.save();
+            form.reset();
+            this.renderZoomClasses();
+            alert(`✅ Live Zoom link "${title}" published!`);
+        });
+    },
+
+    renderZoomClasses() {
+        const grid = document.getElementById('zoom-classes-grid');
+        const adminPanel = document.getElementById('admin-zoom-panel');
+        if (!grid) return;
+
+        if (adminPanel) {
+            adminPanel.style.display = State.isAdmin() ? 'block' : 'none';
+        }
+
+        grid.innerHTML = '';
+        const isAdmin = State.isAdmin();
+
+        State.zoomClasses.forEach(z => {
+            const isLive = z.status === 'LIVE NOW';
+            const statusBadge = isLive 
+                ? `<span class="zoom-badge-status status-live"><span class="pulse-ring"></span> LIVE NOW</span>`
+                : `<span class="zoom-badge-status status-upcoming">🕒 ${z.time.split('|')[0] || 'Upcoming'}</span>`;
+
+            const card = document.createElement('div');
+            card.className = 'zoom-card glass';
+            card.innerHTML = `
+                <div>
+                    <div class="zoom-card-header">
+                        <div class="zoom-brand-badge">
+                            <i data-lucide="video"></i> Zoom Live
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; color: var(--text-primary);">${z.title}</h3>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">📅 ${z.time} | 👨‍🏫 ${z.instructor}</p>
+                    
+                    <div class="zoom-credentials-box">
+                        <div class="zoom-cred-item">
+                            <span class="zoom-cred-label">Meeting ID</span>
+                            <span class="zoom-cred-val">${z.meetingId}</span>
+                        </div>
+                        <button class="btn btn-secondary copy-btn" data-copy="${z.meetingId}" style="padding: 4px 8px; font-size: 0.78rem;">
+                            <i data-lucide="copy"></i> Copy ID
+                        </button>
+                    </div>
+
+                    <div class="zoom-credentials-box">
+                        <div class="zoom-cred-item">
+                            <span class="zoom-cred-label">Passcode</span>
+                            <span class="zoom-cred-val">${z.passcode}</span>
+                        </div>
+                        <button class="btn btn-secondary copy-btn" data-copy="${z.passcode}" style="padding: 4px 8px; font-size: 0.78rem;">
+                            <i data-lucide="copy"></i> Copy Pass
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    <a href="${z.url}" target="_blank" class="btn btn-zoom" style="text-decoration: none;">
+                        <i data-lucide="external-link"></i> Join Live Zoom Class
+                    </a>
+                    ${isAdmin ? `<button class="btn btn-secondary delete-zoom-btn" data-id="${z.id}" style="color: var(--danger);"><i data-lucide="trash-2"></i> Delete Link</button>` : ''}
+                </div>
+            `;
+
+            // Copy handlers
+            card.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = btn.getAttribute('data-copy');
+                    navigator.clipboard.writeText(text).then(() => {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = `<i data-lucide="check"></i> Copied!`;
+                        btn.style.borderColor = 'var(--success)';
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                            btn.style.borderColor = '';
+                            lucide.createIcons();
+                        }, 2000);
+                        lucide.createIcons();
+                    });
+                });
+            });
+
+            // Delete handler for admin
+            if (isAdmin) {
+                card.querySelector('.delete-zoom-btn').addEventListener('click', () => {
+                    if (confirm(`Delete Zoom class "${z.title}"?`)) {
+                        State.zoomClasses = State.zoomClasses.filter(x => x.id !== z.id);
+                        State.save();
+                        this.renderZoomClasses();
+                    }
+                });
+            }
+
+            grid.appendChild(card);
+        });
+
+        lucide.createIcons();
+    },
+
+    // 15. WHATSAPP GROUPS MODULE
+    bindWhatsAppEvents() {
+        const form = document.getElementById('whatsapp-create-form');
+        if (!form) return;
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('wa-input-name').value.trim();
+            const batch = document.getElementById('wa-input-batch').value.trim();
+            const desc = document.getElementById('wa-input-desc').value.trim();
+            const url = document.getElementById('wa-input-url').value.trim();
+
+            if (!name || !url) return;
+
+            const newWA = {
+                id: 'wa-' + Date.now(),
+                name,
+                batch,
+                desc,
+                members: 'Active Group',
+                url
+            };
+
+            State.whatsappGroups.unshift(newWA);
+            State.save();
+            form.reset();
+            this.renderWhatsAppGroups();
+            alert(`✅ WhatsApp Group "${name}" published!`);
+        });
+    },
+
+    renderWhatsAppGroups() {
+        const grid = document.getElementById('whatsapp-groups-grid');
+        const adminPanel = document.getElementById('admin-whatsapp-panel');
+        if (!grid) return;
+
+        if (adminPanel) {
+            adminPanel.style.display = State.isAdmin() ? 'block' : 'none';
+        }
+
+        grid.innerHTML = '';
+        const isAdmin = State.isAdmin();
+
+        State.whatsappGroups.forEach(w => {
+            const card = document.createElement('div');
+            card.className = 'whatsapp-card glass';
+            card.innerHTML = `
+                <div>
+                    <div class="whatsapp-icon-bg">
+                        <i data-lucide="message-circle" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <span class="whatsapp-badge">🏷️ ${w.batch}</span>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; color: var(--text-primary);">${w.name}</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">${w.desc}</p>
+                    <p style="font-size: 0.8rem; font-weight: 700; color: var(--whatsapp-green); margin-bottom: 20px;">👥 ${w.members}</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="${w.url}" target="_blank" class="btn btn-whatsapp" style="text-decoration: none;">
+                        <i data-lucide="message-square"></i> Join WhatsApp Group
+                    </a>
+                    ${isAdmin ? `<button class="btn btn-secondary delete-wa-btn" data-id="${w.id}" style="color: var(--danger);"><i data-lucide="trash-2"></i> Delete Group</button>` : ''}
+                </div>
+            `;
+
+            if (isAdmin) {
+                card.querySelector('.delete-wa-btn').addEventListener('click', () => {
+                    if (confirm(`Delete WhatsApp group "${w.name}"?`)) {
+                        State.whatsappGroups = State.whatsappGroups.filter(x => x.id !== w.id);
+                        State.save();
+                        this.renderWhatsAppGroups();
+                    }
+                });
+            }
+
+            grid.appendChild(card);
+        });
+
+        lucide.createIcons();
+    },
+
+    // 16. CLASS RECORDINGS MODULE
+    bindRecordingsEvents() {
+        const searchInput = document.getElementById('recordings-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                State.recSearchQuery = e.target.value.toLowerCase().trim();
+                this.renderRecordings();
+            });
+        }
+
+        document.querySelectorAll('.tute-filter-btn[data-rec-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tute-filter-btn[data-rec-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                State.activeRecFilter = btn.getAttribute('data-rec-filter');
+                this.renderRecordings();
+            });
+        });
+
+        const form = document.getElementById('recording-create-form');
+        if (!form) return;
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('rec-input-title').value.trim();
+            const category = document.getElementById('rec-input-category').value;
+            const duration = document.getElementById('rec-input-duration').value.trim();
+            const date = document.getElementById('rec-input-date').value.trim();
+            const downloadUrl = document.getElementById('rec-input-download').value.trim();
+            const streamUrl = document.getElementById('rec-input-stream').value.trim();
+
+            if (!title || !downloadUrl) return;
+
+            const newRec = {
+                id: 'rec-' + Date.now(),
+                title,
+                category,
+                duration,
+                date,
+                desc: `Recorded lecture on ${title} (${category}).`,
+                streamUrl: streamUrl || downloadUrl,
+                downloadUrl
+            };
+
+            State.recordings.unshift(newRec);
+            State.save();
+            form.reset();
+            this.renderRecordings();
+            alert(`✅ Recording link "${title}" published!`);
+        });
+    },
+
+    renderRecordings() {
+        const grid = document.getElementById('recordings-grid');
+        const adminPanel = document.getElementById('admin-recording-panel');
+        if (!grid) return;
+
+        if (adminPanel) {
+            adminPanel.style.display = State.isAdmin() ? 'block' : 'none';
+        }
+
+        grid.innerHTML = '';
+        const isAdmin = State.isAdmin();
+
+        const filtered = State.recordings.filter(r => {
+            const matchesCat = State.activeRecFilter === 'All' || r.category === State.activeRecFilter;
+            const matchesSearch = !State.recSearchQuery || 
+                r.title.toLowerCase().includes(State.recSearchQuery) || 
+                r.category.toLowerCase().includes(State.recSearchQuery) || 
+                r.desc.toLowerCase().includes(State.recSearchQuery);
+            return matchesCat && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px;" class="glass">
+                    <i data-lucide="film" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 12px;"></i>
+                    <h4>No Recordings Found</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">No video recordings match your filter criteria.</p>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+
+        filtered.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'recording-card glass';
+            card.innerHTML = `
+                <div class="recording-thumb">
+                    <div class="play-btn-overlay" title="Watch Video Preview">
+                        <i data-lucide="play" style="fill: #ffffff; width: 22px; height: 22px;"></i>
+                    </div>
+                    <span class="duration-badge">⏱️ ${r.duration}</span>
+                </div>
+                <div class="recording-body">
+                    <div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                            <span class="tute-card-type badge-tutorial">${r.category}</span>
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">📅 ${r.date}</span>
+                        </div>
+                        <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; color: var(--text-primary);">${r.title}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">${r.desc}</p>
+                    </div>
+
+                    <div>
+                        <div class="recording-actions">
+                            <button class="btn btn-watch" data-id="${r.id}">
+                                <i data-lucide="play-circle"></i> Watch
+                            </button>
+                            <a href="${r.downloadUrl}" target="_blank" download class="btn btn-download" style="text-decoration: none;">
+                                <i data-lucide="download"></i> Download
+                            </a>
+                        </div>
+                        ${isAdmin ? `<button class="btn btn-secondary delete-rec-btn" data-id="${r.id}" style="width:100%; margin-top:8px; color:var(--danger);"><i data-lucide="trash-2"></i> Delete Recording</button>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Watch preview modal handler
+            card.querySelector('.play-btn-overlay').addEventListener('click', () => {
+                this.openVideoModal(r.title, r.streamUrl, r.downloadUrl);
+            });
+            card.querySelector('.btn-watch').addEventListener('click', () => {
+                this.openVideoModal(r.title, r.streamUrl, r.downloadUrl);
+            });
+
+            if (isAdmin) {
+                card.querySelector('.delete-rec-btn').addEventListener('click', () => {
+                    if (confirm(`Delete recording "${r.title}"?`)) {
+                        State.recordings = State.recordings.filter(x => x.id !== r.id);
+                        State.save();
+                        this.renderRecordings();
+                    }
+                });
+            }
+
+            grid.appendChild(card);
+        });
+
+        lucide.createIcons();
+    },
+
+    bindVideoModalEvents() {
+        const closeBtn = document.getElementById('close-video-modal-btn');
+        const modal = document.getElementById('video-preview-modal');
+        if (!closeBtn || !modal) return;
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.getElementById('video-player-box').innerHTML = '';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.getElementById('video-player-box').innerHTML = '';
+            }
+        });
+    },
+
+    openVideoModal(title, streamUrl, downloadUrl) {
+        const modal = document.getElementById('video-preview-modal');
+        const titleEl = document.getElementById('video-modal-title');
+        const playerBox = document.getElementById('video-player-box');
+        const downloadBtn = document.getElementById('modal-download-btn');
+
+        if (!modal || !playerBox) return;
+
+        titleEl.textContent = title;
+        downloadBtn.href = downloadUrl;
+
+        // Render iframe (YouTube / Embed) or Video element
+        if (streamUrl.includes('youtube') || streamUrl.includes('vimeo') || streamUrl.includes('embed')) {
+            playerBox.innerHTML = `<iframe src="${streamUrl}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        } else {
+            playerBox.innerHTML = `
+                <video controls autoplay style="width:100%; height:100%;">
+                    <source src="${streamUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        }
+
+        modal.style.display = 'flex';
+        lucide.createIcons();
     }
 };
 

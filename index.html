@@ -95,6 +95,24 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
+                <li class="menu-item" data-view="zoom">
+                    <a href="#zoom">
+                        <i data-lucide="video" class="menu-icon" style="color: var(--zoom-blue);"></i>
+                        <span>Zoom Live Classes</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-view="whatsapp">
+                    <a href="#whatsapp">
+                        <i data-lucide="message-circle" class="menu-icon" style="color: var(--whatsapp-green);"></i>
+                        <span>WhatsApp Groups</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-view="recordings">
+                    <a href="#recordings">
+                        <i data-lucide="film" class="menu-icon" style="color: var(--primary);"></i>
+                        <span>Class Recordings</span>
+                    </a>
+                </li>
                 <li class="menu-item" data-view="lessons">
                     <a href="#lessons">
                         <i data-lucide="book-open" class="menu-icon"></i>
@@ -110,7 +128,7 @@
                 <li class="menu-item" data-view="tutorials">
                     <a href="#tutorials">
                         <i data-lucide="file-text" class="menu-icon"></i>
-                        <span>Tutorials</span>
+                        <span>Papers & Tutes</span>
                     </a>
                 </li>
                 <li class="menu-item" data-view="tools">
@@ -355,18 +373,25 @@
                             <div class="tute-admin-title">
                                 <div class="admin-icon-badge"><i data-lucide="upload-cloud"></i></div>
                                 <div>
-                                    <h3>Upload Tutorial</h3>
-                                    <p>Add PDF or document tutorials for students</p>
+                                    <h3>Upload Paper / Tutorial</h3>
+                                    <p>Add PDF or document study materials for students</p>
                                 </div>
                             </div>
                         </div>
                         <form id="tute-upload-form" class="tute-upload-form">
                             <div class="tute-form-row">
                                 <div class="form-group" style="flex:1;">
-                                    <label class="form-label" for="tute-title">Tutorial Title</label>
-                                    <input class="form-input" style="padding-left:15px;" type="text" id="tute-title" placeholder="e.g. Calculus Cheat Sheet" required>
+                                    <label class="form-label" for="tute-type">Material Type</label>
+                                    <select class="form-input" style="padding-left:15px;" id="tute-type">
+                                        <option value="Paper">Past Paper</option>
+                                        <option value="Tutorial">Tutorial</option>
+                                    </select>
                                 </div>
-                                <div class="form-group" style="flex:1;">
+                                <div class="form-group" style="flex:2;">
+                                    <label class="form-label" for="tute-title">Title</label>
+                                    <input class="form-input" style="padding-left:15px;" type="text" id="tute-title" placeholder="e.g. Calculus Mid-Term Paper" required>
+                                </div>
+                                <div class="form-group" style="flex:1.5;">
                                     <label class="form-label" for="tute-category">Category</label>
                                     <select class="form-input" style="padding-left:15px;" id="tute-category">
                                         <option value="Algebra">Algebra</option>
@@ -379,7 +404,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="tute-description">Description</label>
-                                <textarea class="form-input tute-textarea" id="tute-description" placeholder="Brief description of this tutorial..." style="padding-left:15px; resize:vertical;"></textarea>
+                                <textarea class="form-input tute-textarea" id="tute-description" placeholder="Brief description of this material..." style="padding-left:15px; resize:vertical;"></textarea>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Upload File (PDF, DOCX, TXT — max 5MB)</label>
@@ -392,7 +417,7 @@
                             </div>
                             <button type="submit" class="btn btn-primary" id="tute-upload-btn" style="width:100%;">
                                 <i data-lucide="upload"></i>
-                                <span>Upload Tutorial</span>
+                                <span>Upload Material</span>
                             </button>
                             <p id="tute-upload-feedback" style="margin-top:10px;font-weight:600;display:none;"></p>
                         </form>
@@ -401,16 +426,23 @@
                     <!-- All Tutorials Grid -->
                     <div class="tute-section-header">
                         <div>
-                            <h3 class="tute-section-title">Available Tutorials</h3>
-                            <p class="tute-section-sub">Download study materials uploaded by your instructor</p>
+                            <h3 class="tute-section-title">Available Materials</h3>
+                            <p class="tute-section-sub">Download study materials and papers uploaded by your instructor</p>
                         </div>
                         <div class="tute-filter-bar">
-                            <button class="tute-filter-btn active" data-filter="All">All</button>
-                            <button class="tute-filter-btn" data-filter="Algebra">Algebra</button>
-                            <button class="tute-filter-btn" data-filter="Trigonometry">Trigonometry</button>
-                            <button class="tute-filter-btn" data-filter="Calculus">Calculus</button>
-                            <button class="tute-filter-btn" data-filter="Statistics">Statistics</button>
-                            <button class="tute-filter-btn" data-filter="General">General</button>
+                            <div style="display: flex; gap: 8px; margin-right: 15px; border-right: 2px solid var(--border-color); padding-right: 15px; align-items: center;">
+                                <button class="tute-type-filter-btn active" data-type-filter="All">All Types</button>
+                                <button class="tute-type-filter-btn" data-type-filter="Paper">Papers</button>
+                                <button class="tute-type-filter-btn" data-type-filter="Tutorial">Tutorials</button>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="tute-filter-btn active" data-filter="All">All Categories</button>
+                                <button class="tute-filter-btn" data-filter="Algebra">Algebra</button>
+                                <button class="tute-filter-btn" data-filter="Trigonometry">Trigonometry</button>
+                                <button class="tute-filter-btn" data-filter="Calculus">Calculus</button>
+                                <button class="tute-filter-btn" data-filter="Statistics">Statistics</button>
+                                <button class="tute-filter-btn" data-filter="General">General</button>
+                            </div>
                         </div>
                     </div>
 
@@ -464,11 +496,200 @@
                     </div>
                 </div>
 
+                <!-- VIEW: ZOOM ONLINE CLASSES -->
+                <div id="view-zoom" class="spa-view" style="display: none;">
+                    <div class="tute-section-header" style="margin-bottom: 20px;">
+                        <div>
+                            <h3 class="tute-section-title" style="display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="video" style="color: var(--zoom-blue);"></i> Zoom Online Live Classes
+                            </h3>
+                            <p class="tute-section-sub">Get official live class links, meeting IDs, and passcodes for your interactive sessions</p>
+                        </div>
+                    </div>
+
+                    <!-- Admin Add Zoom Class Form (Hidden for students) -->
+                    <div id="admin-zoom-panel" class="glass" style="display:none; padding: 25px; margin-bottom: 25px; border-radius: var(--radius-lg); border-left: 4px solid var(--zoom-blue);">
+                        <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="plus-circle" style="color: var(--zoom-blue);"></i> Add New Live Zoom Class Link
+                        </h4>
+                        <form id="zoom-create-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Class Title</label>
+                                <input type="text" class="form-input" id="zoom-input-title" placeholder="e.g. 2024 Theory - Calculus" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date & Time</label>
+                                <input type="text" class="form-input" id="zoom-input-time" placeholder="e.g. Every Sunday 8:00 AM" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select class="form-input" id="zoom-input-status" style="padding-left:15px;">
+                                    <option value="LIVE NOW">LIVE NOW</option>
+                                    <option value="Upcoming">Upcoming</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Meeting ID</label>
+                                <input type="text" class="form-input" id="zoom-input-mid" placeholder="e.g. 845 2910 4432" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Passcode</label>
+                                <input type="text" class="form-input" id="zoom-input-pass" placeholder="e.g. MATHS2025" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">Zoom Class Join URL</label>
+                                <input type="url" class="form-input" id="zoom-input-url" placeholder="https://zoom.us/j/84529104432?pwd=..." required style="padding-left:15px;">
+                            </div>
+                            <button type="submit" class="btn btn-zoom" style="grid-column: 1 / -1; margin-top: 5px;">
+                                <i data-lucide="video"></i> Publish Zoom Class Link
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Zoom Cards Grid -->
+                    <div class="zoom-grid" id="zoom-classes-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- VIEW: WHATSAPP GROUPS -->
+                <div id="view-whatsapp" class="spa-view" style="display: none;">
+                    <div class="tute-section-header" style="margin-bottom: 20px;">
+                        <div>
+                            <h3 class="tute-section-title" style="display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="message-circle" style="color: var(--whatsapp-green);"></i> Official WhatsApp Groups
+                            </h3>
+                            <p class="tute-section-sub">Join your official batch WhatsApp group to receive daily announcements, homework PDF updates, and discussion links</p>
+                        </div>
+                    </div>
+
+                    <!-- Admin Add WhatsApp Group Form (Hidden for students) -->
+                    <div id="admin-whatsapp-panel" class="glass" style="display:none; padding: 25px; margin-bottom: 25px; border-radius: var(--radius-lg); border-left: 4px solid var(--whatsapp-green);">
+                        <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="plus-circle" style="color: var(--whatsapp-green);"></i> Add WhatsApp Group Link
+                        </h4>
+                        <form id="whatsapp-create-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Group Name</label>
+                                <input type="text" class="form-input" id="wa-input-name" placeholder="e.g. 2025 Theory Main Group" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Target Batch / Year</label>
+                                <input type="text" class="form-input" id="wa-input-batch" placeholder="e.g. 2025 Batch" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input type="text" class="form-input" id="wa-input-desc" placeholder="e.g. Official announcements & daily updates" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">WhatsApp Invite Link</label>
+                                <input type="url" class="form-input" id="wa-input-url" placeholder="https://chat.whatsapp.com/..." required style="padding-left:15px;">
+                            </div>
+                            <button type="submit" class="btn btn-whatsapp" style="grid-column: 1 / -1; margin-top: 5px;">
+                                <i data-lucide="message-circle"></i> Publish WhatsApp Group
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- WhatsApp Groups Grid -->
+                    <div class="whatsapp-grid" id="whatsapp-groups-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- VIEW: CLASS RECORDINGS -->
+                <div id="view-recordings" class="spa-view" style="display: none;">
+                    <div class="tute-section-header" style="margin-bottom: 20px;">
+                        <div>
+                            <h3 class="tute-section-title" style="display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="film" style="color: var(--primary);"></i> Downloadable Class Recordings
+                            </h3>
+                            <p class="tute-section-sub">Watch recorded lectures online or download high-definition video recordings for offline study</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Bar -->
+                    <div class="recordings-search-bar">
+                        <div class="recordings-search-wrapper">
+                            <i data-lucide="search" class="recordings-search-icon"></i>
+                            <input type="text" class="recordings-search-input" id="recordings-search-input" placeholder="Search recordings by topic, title, or date...">
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button class="tute-filter-btn active" data-rec-filter="All">All Topics</button>
+                            <button class="tute-filter-btn" data-rec-filter="Calculus">Calculus</button>
+                            <button class="tute-filter-btn" data-rec-filter="Algebra">Algebra</button>
+                            <button class="tute-filter-btn" data-rec-filter="Trigonometry">Trigonometry</button>
+                            <button class="tute-filter-btn" data-rec-filter="Applied Maths">Applied Maths</button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Add Recording Panel (Hidden for students) -->
+                    <div id="admin-recording-panel" class="glass" style="display:none; padding: 25px; margin-bottom: 25px; border-radius: var(--radius-lg); border-left: 4px solid var(--primary);">
+                        <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="plus-circle" style="color: var(--primary);"></i> Add Class Recording Link
+                        </h4>
+                        <form id="recording-create-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Video Title</label>
+                                <input type="text" class="form-input" id="rec-input-title" placeholder="e.g. Integration by Parts - Full Session" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select class="form-input" id="rec-input-category" style="padding-left:15px;">
+                                    <option value="Calculus">Calculus</option>
+                                    <option value="Algebra">Algebra</option>
+                                    <option value="Trigonometry">Trigonometry</option>
+                                    <option value="Applied Maths">Applied Maths</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duration</label>
+                                <input type="text" class="form-input" id="rec-input-duration" placeholder="e.g. 2h 15m" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date Recorded</label>
+                                <input type="text" class="form-input" id="rec-input-date" placeholder="e.g. Aug 02, 2026" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">Direct Download Link (Google Drive / Mega / Server)</label>
+                                <input type="url" class="form-input" id="rec-input-download" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" required style="padding-left:15px;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">Video Preview URL (YouTube Embed / MP4 Link / Vimeo)</label>
+                                <input type="url" class="form-input" id="rec-input-stream" placeholder="https://www.youtube.com/embed/..." style="padding-left:15px;">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; margin-top: 5px;">
+                                <i data-lucide="upload-cloud"></i> Publish Recording Link
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Recordings Grid -->
+                    <div class="recordings-grid" id="recordings-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
                 <!-- VIEW 5: SETTINGS -->
                 <div id="view-settings" class="spa-view" style="display: none;">
                     <div class="settings-section glass" style="padding: 40px;">
                         <h3 style="font-size: 1.5rem; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px;">Settings & Customisation</h3>
                         
+                        <!-- Theme Mode Switcher (Dark vs Light) -->
+                        <div class="form-group">
+                            <label class="form-label" style="margin-bottom: 12px;">App Interface Theme Mode</label>
+                            <div class="mode-toggle-group">
+                                <button type="button" class="mode-btn active" id="mode-btn-dark" data-mode-select="dark">
+                                    <i data-lucide="moon"></i>
+                                    <span>Dark Theme (Default)</span>
+                                </button>
+                                <button type="button" class="mode-btn" id="mode-btn-light" data-mode-select="light">
+                                    <i data-lucide="sun"></i>
+                                    <span>Light Theme</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Account Details -->
                         <div class="form-group">
                             <label class="form-label" for="settings-username">Student Name</label>
@@ -506,6 +727,26 @@
 
         </main>
     </section>
+
+    <!-- Video Watch Preview Modal -->
+    <div id="video-preview-modal" class="video-modal-backdrop" style="display: none;">
+        <div class="video-modal-content">
+            <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+                <h4 id="video-modal-title" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">Video Preview</h4>
+                <button class="btn-icon" id="close-video-modal-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="video-player-container" id="video-player-box">
+                <!-- iFrame or video tag loaded dynamically -->
+            </div>
+            <div style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-accent);">
+                <a href="#" id="modal-download-btn" target="_blank" class="btn btn-download" style="max-width: 220px; text-decoration: none;">
+                    <i data-lucide="download"></i> Download Video
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Formula Reference Modal / Drawer (Triggered from Dashboard Toolbox) -->
     <div id="formulas-modal" class="auth-wrapper" style="display: none; position: fixed; background: rgba(0,0,0,0.4); z-index: 100; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center;">
