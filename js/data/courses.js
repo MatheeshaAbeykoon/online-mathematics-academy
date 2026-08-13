@@ -308,11 +308,16 @@ const INITIAL_RECORDINGS = [
 ];
 
 // 2. STATE MANAGER
-const State = {
+export const State = {
     user: null,
     currentView: "dashboard",
     theme: "violet",
     mode: "dark", // default dark theme
+    students: [],
+    addStudent(student) {
+        this.students.push(student);
+        this.save();
+    },
     streak: 3,
     completedLessons: ["algebra-0"], // stores lessonId-sectionIdx
     scores: {}, // stores quizId: pctScore
@@ -339,11 +344,12 @@ const State = {
         const email = (this.user.email || "").toLowerCase();
         return email.startsWith("admin");
     },
-    
+
     // Save to local storage
     save() {
         const payload = {
             user: this.user,
+            students: this.students,
             theme: this.theme,
             mode: this.mode,
             streak: this.streak,
@@ -360,11 +366,11 @@ const State = {
     saveTutorials() {
         try {
             localStorage.setItem("abmathematics_tutorials", JSON.stringify(this.tutorials));
-        } catch(e) {
+        } catch (e) {
             console.error("Tutorial storage failed (file may be too large):", e);
         }
     },
-    
+
     // Load from local storage
     load() {
         const raw = localStorage.getItem("abmathematics_state");
@@ -372,6 +378,7 @@ const State = {
             try {
                 const parsed = JSON.parse(raw);
                 this.user = parsed.user || null;
+                this.students = parsed.students || [];
                 this.theme = parsed.theme || "violet";
                 this.mode = parsed.mode || "dark";
                 this.streak = parsed.streak || 3;
@@ -394,11 +401,11 @@ const State = {
         if (rawTutes) {
             try {
                 this.tutorials = JSON.parse(rawTutes) || [];
-            } catch(e) {
+            } catch (e) {
                 this.tutorials = [];
             }
         }
-        
+
         // Initialize mock data if storage is empty
         if (this.tutorials.length === 0) {
             const dummyDataUrl = "data:text/plain;base64,U2FtcGxlIERvY3VtZW50IENvbnRlbnQgLSBBYiBNYXRoZW1hdGljcw==";
@@ -460,7 +467,7 @@ const State = {
 // 3. UI RENDERING AND MATH RENDERING HELPERS
 function renderMathInElement(elem) {
     if (!elem) return;
-    
+
     // 1. Handle blocks marked with data-math
     const mathBlocks = elem.querySelectorAll('.math-equation-block');
     mathBlocks.forEach(block => {
@@ -478,7 +485,7 @@ function renderMathInElement(elem) {
     // Work on text nodes to prevent destroying HTML structures
     const walk = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT, null, false);
     const nodesToReplace = [];
-    
+
     while (walk.nextNode()) {
         const node = walk.currentNode;
         if (node.parentNode.tagName === 'CODE' || node.parentNode.tagName === 'SCRIPT' || node.parentNode.classList.contains('math-equation-block')) {
@@ -488,15 +495,15 @@ function renderMathInElement(elem) {
             nodesToReplace.push(node);
         }
     }
-    
+
     nodesToReplace.forEach(node => {
         const text = node.nodeValue;
         const parent = node.parentNode;
-        
+
         // Split by '$'
         const parts = text.split('$');
         const fragment = document.createDocumentFragment();
-        
+
         for (let i = 0; i < parts.length; i++) {
             if (i % 2 === 0) {
                 // Regular text
@@ -537,18 +544,18 @@ const Grapher = {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
-        
+
         // Reset translation to center
         this.offsetX = this.canvas.width / 2;
         this.offsetY = this.canvas.height / 2;
-        
+
         // Listeners for drawing
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseleave', () => {
             this.hoverCoord = null;
             this.draw();
         });
-        
+
         this.draw();
     },
 
@@ -577,18 +584,18 @@ const Grapher = {
             let parsed = expr.toLowerCase();
             parsed = parsed.replace(/\bpi\b/g, 'Math.PI');
             parsed = parsed.replace(/\be\b/g, 'Math.E');
-            
+
             const MathFunctions = ['sin', 'cos', 'tan', 'sqrt', 'abs', 'log', 'exp', 'pow'];
             MathFunctions.forEach(f => {
                 const regex = new RegExp(`\\b${f}\\(`, 'g');
                 parsed = parsed.replace(regex, `Math.${f}(`);
             });
-            
+
             parsed = parsed.replace(/\^/g, '**');
-            
+
             // Replace standalone variable 'x'
             parsed = parsed.replace(/(?<![a-z_])x(?![a-z_])/g, `(${x})`);
-            
+
             // Safe evaluation via function builder
             const result = new Function(`return ${parsed}`)();
             return isNaN(result) || !isFinite(result) ? null : result;
@@ -600,25 +607,25 @@ const Grapher = {
     drawGrid() {
         const { width, height } = this.canvas;
         const ctx = this.ctx;
-        
+
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
 
         // Draw light grid lines
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 1;
-        
+
         // Vertical lines & numbers
         const xStart = Math.floor(-this.offsetX / this.scale);
         const xEnd = Math.ceil((width - this.offsetX) / this.scale);
-        
+
         for (let i = xStart; i <= xEnd; i++) {
             const x = this.offsetX + i * this.scale;
             ctx.beginPath();
             ctx.moveTo(x, 0);
             ctx.lineTo(x, height);
             ctx.stroke();
-            
+
             // Numbers on axis
             if (i !== 0) {
                 ctx.fillStyle = '#94a3b8';
@@ -626,18 +633,18 @@ const Grapher = {
                 ctx.fillText(i, x - 5, this.offsetY + 15);
             }
         }
-        
+
         // Horizontal lines & numbers
         const yStart = Math.floor(-this.offsetY / this.scale);
         const yEnd = Math.ceil((height - this.offsetY) / this.scale);
-        
+
         for (let j = yStart; j <= yEnd; j++) {
             const y = this.offsetY + j * this.scale;
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(width, y);
             ctx.stroke();
-            
+
             // Numbers on axis
             if (j !== 0) {
                 ctx.fillStyle = '#94a3b8';
@@ -649,19 +656,19 @@ const Grapher = {
         // Main Axes (Glow lighting style)
         ctx.strokeStyle = '#64748b';
         ctx.lineWidth = 2;
-        
+
         // X-axis
         ctx.beginPath();
         ctx.moveTo(0, this.offsetY);
         ctx.lineTo(width, this.offsetY);
         ctx.stroke();
-        
+
         // Y-axis
         ctx.beginPath();
         ctx.moveTo(this.offsetX, 0);
         ctx.lineTo(this.offsetX, height);
         ctx.stroke();
-        
+
         // Origin marker
         ctx.fillStyle = '#64748b';
         ctx.fillText('0', this.offsetX - 12, this.offsetY + 15);
@@ -670,19 +677,19 @@ const Grapher = {
     drawFunction() {
         const { width, height } = this.canvas;
         const ctx = this.ctx;
-        
+
         ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#7c3aed';
         ctx.lineWidth = 3;
         ctx.shadowColor = ctx.strokeStyle;
         ctx.shadowBlur = 10;
-        
+
         ctx.beginPath();
         let drawing = false;
-        
+
         for (let screenX = 0; screenX < width; screenX++) {
             const mathX = (screenX - this.offsetX) / this.scale;
             const mathY = this.evalExpr(this.expression, mathX);
-            
+
             if (mathY !== null) {
                 const screenY = this.offsetY - mathY * this.scale;
                 if (screenY >= 0 && screenY <= height) {
@@ -700,7 +707,7 @@ const Grapher = {
             }
         }
         ctx.stroke();
-        
+
         // Reset shadow
         ctx.shadowBlur = 0;
     },
@@ -708,26 +715,26 @@ const Grapher = {
     drawHoverPoint() {
         if (!this.hoverCoord) return;
         const ctx = this.ctx;
-        
+
         const mathX = (this.hoverCoord.x - this.offsetX) / this.scale;
         const mathY = this.evalExpr(this.expression, mathX);
-        
+
         if (mathY !== null) {
             const screenY = this.offsetY - mathY * this.scale;
-            
+
             // Draw marker circle
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#7c3aed';
             ctx.beginPath();
             ctx.arc(this.hoverCoord.x, screenY, 6, 0, 2 * Math.PI);
             ctx.fill();
-            
+
             // Marker border
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.arc(this.hoverCoord.x, screenY, 6, 0, 2 * Math.PI);
             ctx.stroke();
-            
+
             // Tooltip text
             const text = `(${mathX.toFixed(2)}, ${mathY.toFixed(2)})`;
             ctx.fillStyle = '#1e1b4b';

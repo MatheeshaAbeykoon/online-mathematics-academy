@@ -122,6 +122,13 @@
                         <i data-lucide="film" class="menu-icon" style="color: var(--primary);"></i>
                         <span>Class Recordings</span>
                     </a>
+                <li class="menu-item" data-view="students">
+                    <a href="#students">
+                        <i data-lucide="users" class="menu-icon"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+
                 </li>
                 <li class="menu-item" data-view="lessons">
                     <a href="#lessons">
@@ -389,7 +396,76 @@
                         </div>
                     </div>
                 </div>
+                <!-- VIEW: STUDENT MANAGEMENT -->
+                <div id="view-students" class="spa-view" style="display: none;">
 
+                    <div class="page-header">
+                        <div>
+                            <h1>Student Management</h1>
+                            <p>Manage students, classes and student information.</p>
+                        </div>
+
+                        <button type="button" id="add-student-btn" class="primary-btn">
+                            <i data-lucide="user-plus"></i>
+                            Add Student
+                        </button>
+                    </div>
+
+                    <!-- Student Form -->
+                    <div id="student-form-container" class="settings-section glass" style="display: none;">
+
+                        <h2>Add New Student</h2>
+
+                        <form id="student-form">
+
+                            <div class="form-group">
+                                <label class="form-label" for="student-name">
+                                    Student Name
+                                </label>
+
+                                <input class="form-input" type="text" id="student-name" placeholder="Enter student name"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="student-grade">
+                                    Grade
+                                </label>
+
+                                <input class="form-input" type="text" id="student-grade" placeholder="Example: Grade 10"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="student-phone">
+                                    Phone Number
+                                </label>
+
+                                <input class="form-input" type="tel" id="student-phone" placeholder="0771234567"
+                                    required>
+                            </div>
+
+                            <button type="submit" class="primary-btn">
+                                <i data-lucide="save"></i>
+                                Save Student
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    <!-- Student List -->
+                    <div class="settings-section glass">
+
+                        <h2>Students</h2>
+
+                        <div id="students-list">
+                            <p>No students added yet.</p>
+                        </div>
+
+                    </div>
+
+                </div>
                 <!-- VIEW 6: TUTORIALS -->
                 <div id="view-tutorials" class="spa-view" style="display: none;">
 

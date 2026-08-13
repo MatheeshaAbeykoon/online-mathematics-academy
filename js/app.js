@@ -1,11 +1,11 @@
-﻿import { COURSES_DATA } from './data/courses.js';
+﻿import { COURSES_DATA, State } from './data/courses.js';
 
 const App = {
     init() {
         State.load();
         this.applyTheme(State.theme);
         this.applyMode(State.mode);
-        
+
         this.bindAuthEvents();
         this.bindNavigation();
         this.bindDashboardEvents();
@@ -13,28 +13,30 @@ const App = {
         this.bindQuizEvents();
         this.bindToolEvents();
         this.bindSettingsEvents();
+        this.bindStudentEvents();
+        this.renderStudents();
         this.bindTutorialsEvents();
         this.bindZoomEvents();
         this.bindWhatsAppEvents();
         this.bindRecordingsEvents();
         this.bindVideoModalEvents();
-        
+
         // Show app shell if user is logged in
         if (State.user) {
             this.showAppShell();
         } else {
             this.showAuthShell();
         }
-        
+
         lucide.createIcons();
     },
-    
+
     // Theme accent management
     applyTheme(themeName) {
         document.body.setAttribute('data-theme', themeName);
         State.theme = themeName;
         State.save();
-        
+
         // Update active class in settings theme boxes
         document.querySelectorAll('.theme-button').forEach(btn => {
             if (btn.getAttribute('data-theme') === themeName) {
@@ -43,7 +45,7 @@ const App = {
                 btn.classList.remove('active');
             }
         });
-        
+
         // Redraw canvas if active to match colors
         if (State.currentView === "tools") {
             Grapher.draw();
@@ -55,7 +57,7 @@ const App = {
         document.body.setAttribute('data-mode', modeName);
         State.mode = modeName;
         State.save();
-        
+
         const darkBtn = document.getElementById('mode-btn-dark');
         const lightBtn = document.getElementById('mode-btn-light');
         if (darkBtn && lightBtn) {
@@ -77,14 +79,14 @@ const App = {
     showAppShell() {
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('app-section').style.display = 'flex';
-        
+
         // Set user labels
         document.getElementById('sidebar-user-name').textContent = State.user.name || "Guest Student";
-        
+
         // Set profile avatar
         const initials = (State.user.name || "GS").split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
         document.getElementById('sidebar-avatar').textContent = initials;
-        
+
         // Sync setting page fields
         document.getElementById('settings-username').value = State.user.name;
 
@@ -99,16 +101,16 @@ const App = {
 
     switchView(viewId) {
         State.currentView = viewId;
-        
+
         // 1. Hide all views
         document.querySelectorAll('.spa-view').forEach(view => {
             view.style.display = 'none';
         });
-        
+
         // 2. Show active view
         const targetView = document.getElementById(`view-${viewId}`);
         if (targetView) targetView.style.display = 'block';
-        
+
         // 3. Mark active sidebar element
         document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
             if (item.getAttribute('data-view') === viewId) {
@@ -121,7 +123,7 @@ const App = {
         // 4. Update Titles & Subtitles based on view
         const titleElem = document.getElementById('view-title');
         const subElem = document.getElementById('view-subtitle');
-        
+
         if (viewId === "dashboard") {
             titleElem.textContent = `Welcome back, ${State.user.name}!`;
             subElem.textContent = "Explore your math modules and dashboard highlights.";
@@ -164,7 +166,7 @@ const App = {
             subElem.textContent = "Personalise your profile dashboard, light mode / dark mode theme, and lighting interface glow.";
             this.applyMode(State.mode);
         }
-        
+
         lucide.createIcons();
     },
 
@@ -175,7 +177,7 @@ const App = {
         const passInput = document.getElementById('auth-password');
         const toggleLink = document.getElementById('auth-toggle-link');
         const submitBtn = document.getElementById('auth-submit-btn');
-        
+
         let isSignUp = false;
 
         togglePassBtn.addEventListener('click', () => {
@@ -188,7 +190,7 @@ const App = {
         toggleLink.addEventListener('click', (e) => {
             e.preventDefault();
             isSignUp = !isSignUp;
-            
+
             document.getElementById('auth-title').textContent = isSignUp ? "Create Scholar Profile" : "Welcome to AB Mathematics";
             document.getElementById('auth-subtitle').textContent = isSignUp ? "Sign up to join our mathematics classes" : "Log in to continue your mathematics journey";
             submitBtn.querySelector('span').textContent = isSignUp ? "Sign Up" : "Log In";
@@ -199,7 +201,7 @@ const App = {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const emailVal = document.getElementById('auth-email').value;
-            
+
             // Perform fake authentication
             State.user = {
                 email: emailVal,
@@ -208,7 +210,7 @@ const App = {
             State.save();
             this.showAppShell();
         });
-        
+
         // Log out handler
         document.getElementById('logout-button').addEventListener('click', () => {
             State.user = null;
@@ -234,16 +236,16 @@ const App = {
         const dailySubmit = document.getElementById('daily-challenge-submit');
         const dailyInput = document.getElementById('daily-challenge-input');
         const dailyFeedback = document.getElementById('challenge-feedback');
-        
+
         // Generate random algebra problem on startup
         this.generateDailyChallenge();
 
         dailySubmit.addEventListener('click', () => {
             const answer = parseInt(dailyInput.value);
             if (isNaN(answer)) return;
-            
+
             const expected = this.dailyChallengeAnswer;
-            
+
             dailyFeedback.style.display = 'block';
             if (answer === expected) {
                 dailyFeedback.style.color = 'var(--success)';
@@ -261,11 +263,11 @@ const App = {
         document.getElementById('quick-tool-graph').addEventListener('click', () => {
             this.switchView("tools");
         });
-        
+
         document.getElementById('promo-action-btn').addEventListener('click', () => {
             this.loadCourse("calculus");
         });
-        
+
         document.getElementById('dashboard-view-all-courses').addEventListener('click', () => {
             this.switchView("lessons");
         });
@@ -285,7 +287,7 @@ const App = {
         const x = Math.floor(Math.random() * 8) + 2; // 2 to 9
         const b = Math.floor(Math.random() * 10) + 1; // 1 to 10
         const c = a * x - b;
-        
+
         this.dailyChallengeAnswer = x;
         document.getElementById('daily-challenge-math').textContent = `${a}x - ${b} = ${c}`;
     },
@@ -294,7 +296,7 @@ const App = {
         const modal = document.getElementById('formulas-modal');
         const list = document.getElementById('formula-list-katex');
         list.innerHTML = '';
-        
+
         FORMULAS_DATABASE.forEach(f => {
             const div = document.createElement('div');
             div.className = 'glass';
@@ -305,7 +307,7 @@ const App = {
             `;
             list.appendChild(div);
         });
-        
+
         modal.style.display = 'flex';
         renderMathInElement(list);
     },
@@ -313,10 +315,10 @@ const App = {
     renderDashboard() {
         // Update stats widgets
         document.getElementById('stat-streak').textContent = `${State.streak} Days`;
-        
+
         const totalLessons = COURSES_DATA.reduce((sum, c) => sum + c.sections.length, 0);
         document.getElementById('stat-completed').textContent = `${State.completedLessons.length} / ${totalLessons}`;
-        
+
         const quizScores = Object.values(State.scores);
         const avg = quizScores.length > 0 ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0;
         document.getElementById('stat-avg-score').textContent = `${avg}%`;
@@ -324,7 +326,7 @@ const App = {
         // Load Course Progress cards on dashboard
         const dashboardList = document.getElementById('dashboard-course-list');
         dashboardList.innerHTML = '';
-        
+
         COURSES_DATA.forEach(c => {
             // Calculate completion percent
             const totalSecs = c.sections.length;
@@ -348,7 +350,7 @@ const App = {
                     <span class="progress-pct">${pct}%</span>
                 </div>
             `;
-            
+
             // Make course row clickable
             card.style.cursor = 'pointer';
             card.addEventListener('click', () => {
@@ -397,7 +399,7 @@ const App = {
     renderCoursesGrid() {
         const grid = document.getElementById('courses-grid');
         grid.innerHTML = '';
-        
+
         COURSES_DATA.forEach(c => {
             const completedInCourse = c.sections.filter((_, idx) => State.completedLessons.includes(`${c.id}-${idx}`)).length;
             const pct = Math.round((completedInCourse / c.sections.length) * 100) || 0;
@@ -424,23 +426,23 @@ const App = {
             `;
             grid.appendChild(card);
         });
-        
+
         lucide.createIcons();
     },
 
     loadCourse(courseId) {
         State.activeCourseId = courseId;
         State.activeSectionIndex = 0;
-        
+
         document.getElementById('lessons-index-view').style.display = 'none';
         document.getElementById('lesson-content-view').style.display = 'block';
         this.switchView("lessons");
-        
+
         // Build Section Sidebar Menu
         const course = COURSES_DATA.find(c => c.id === courseId);
         const menu = document.getElementById('lesson-section-menu');
         menu.innerHTML = '';
-        
+
         course.sections.forEach((sec, idx) => {
             const li = document.createElement('li');
             li.className = `lesson-nav-item ${idx === 0 ? 'active' : ''}`;
@@ -448,7 +450,7 @@ const App = {
             li.addEventListener('click', () => this.loadSection(idx));
             menu.appendChild(li);
         });
-        
+
         this.loadSection(0);
     },
 
@@ -456,7 +458,7 @@ const App = {
         State.activeSectionIndex = index;
         const course = COURSES_DATA.find(c => c.id === State.activeCourseId);
         const section = course.sections[index];
-        
+
         // Update menu active highlights
         const items = document.querySelectorAll('#lesson-section-menu .lesson-nav-item');
         items.forEach((item, idx) => {
@@ -466,22 +468,22 @@ const App = {
                 item.classList.remove('active');
             }
         });
-        
+
         // Render content
         document.getElementById('active-lesson-title').textContent = section.title;
         const body = document.getElementById('active-lesson-body');
         body.innerHTML = section.content;
-        
+
         // Adjust footer buttons
         document.getElementById('prev-section-btn').style.visibility = index === 0 ? 'hidden' : 'visible';
-        
+
         const nextBtn = document.getElementById('next-section-btn');
         if (index === course.sections.length - 1) {
             nextBtn.innerHTML = `<span>Take Module Quiz</span> <i data-lucide="award" style="width: 16px; height:16px;"></i>`;
         } else {
             nextBtn.innerHTML = `<span>Next Section</span> <i data-lucide="arrow-right" style="width: 16px; height:16px;"></i>`;
         }
-        
+
         renderMathInElement(body);
         lucide.createIcons();
     },
@@ -520,7 +522,7 @@ const App = {
     renderQuizzesGrid() {
         const grid = document.getElementById('quizzes-grid');
         grid.innerHTML = '';
-        
+
         Object.entries(QUIZZES_DATA).forEach(([quizId, quiz]) => {
             const score = State.scores[quizId];
             const hasCompleted = score !== undefined;
@@ -543,7 +545,7 @@ const App = {
             `;
             grid.appendChild(card);
         });
-        
+
         lucide.createIcons();
     },
 
@@ -553,10 +555,10 @@ const App = {
         State.activeQuizScore = 0;
         State.quizSecondsElapsed = 0;
         State.selectedQuizOption = null;
-        
+
         document.getElementById('quizzes-index-view').style.display = 'none';
         document.getElementById('quiz-runner-view').style.display = 'block';
-        
+
         // Timer
         document.getElementById('quiz-time-display').textContent = '00:00';
         clearInterval(State.quizTimerInterval);
@@ -573,11 +575,11 @@ const App = {
     renderQuizQuestion() {
         const quiz = QUIZZES_DATA[State.activeQuizId];
         const question = quiz.questions[State.activeQuizQuestion];
-        
+
         // Update headers
         document.getElementById('quiz-question-counter').textContent = `Question ${State.activeQuizQuestion + 1} of ${quiz.questions.length}`;
         document.getElementById('quiz-bar-fill').style.width = `${((State.activeQuizQuestion) / quiz.questions.length) * 100}%`;
-        
+
         // Question text
         const textContainer = document.getElementById('quiz-question-text');
         textContainer.innerHTML = question.q;
@@ -586,7 +588,7 @@ const App = {
         // Render options list
         const optionsBox = document.getElementById('quiz-options-container');
         optionsBox.innerHTML = '';
-        
+
         question.options.forEach((opt, idx) => {
             const btn = document.createElement('button');
             btn.className = 'quiz-option';
@@ -598,19 +600,19 @@ const App = {
 
         // Hide description explanations
         document.getElementById('quiz-explanation-box').style.display = 'none';
-        
+
         // Setup footers
         State.selectedQuizOption = null;
         const checkBtn = document.getElementById('quiz-check-btn');
         checkBtn.style.display = 'inline-flex';
         checkBtn.disabled = true;
-        
+
         document.getElementById('quiz-next-btn').style.display = 'none';
     },
 
     selectQuizOption(index) {
         State.selectedQuizOption = index;
-        
+
         const options = document.querySelectorAll('#quiz-options-container .quiz-option');
         options.forEach((opt, idx) => {
             if (idx === index) {
@@ -619,7 +621,7 @@ const App = {
                 opt.classList.remove('selected');
             }
         });
-        
+
         document.getElementById('quiz-check-btn').disabled = false;
     },
 
@@ -630,7 +632,7 @@ const App = {
         const correctIdx = question.answer;
 
         const options = document.querySelectorAll('#quiz-options-container .quiz-option');
-        
+
         options.forEach((opt, idx) => {
             opt.disabled = true; // prevent clicks
             if (idx === correctIdx) {
@@ -654,7 +656,7 @@ const App = {
 
         // Update actions buttons
         document.getElementById('quiz-check-btn').style.display = 'none';
-        
+
         const nextBtn = document.getElementById('quiz-next-btn');
         nextBtn.style.display = 'inline-flex';
         if (State.activeQuizQuestion === quiz.questions.length - 1) {
@@ -672,19 +674,19 @@ const App = {
         } else {
             // End quiz, store results
             clearInterval(State.quizTimerInterval);
-            
+
             const pct = Math.round((State.activeQuizScore / quiz.questions.length) * 100);
             State.scores[State.activeQuizId] = pct;
             State.save();
-            
+
             document.getElementById('quiz-runner-view').style.display = 'none';
             const resultsView = document.getElementById('quiz-results-view');
             resultsView.style.display = 'block';
-            
+
             // Populate score dashboard
             document.getElementById('quiz-final-score').textContent = `${pct}%`;
             document.getElementById('quiz-score-fraction').textContent = `You answered ${State.activeQuizScore} out of ${quiz.questions.length} questions correctly.`;
-            
+
             const msg = document.getElementById('quiz-results-message');
             if (pct === 100) {
                 msg.textContent = "Perfect score! Outstanding work!";
@@ -750,13 +752,80 @@ const App = {
             }
         });
     },
+    // STUDENT MANAGEMENT MODULE
+    bindStudentEvents() {
+        const form = document.getElementById('student-form');
 
+        const addStudentBtn = document.getElementById('add-student-btn');
+        const studentFormContainer = document.getElementById('student-form-container');
+
+        if (addStudentBtn && studentFormContainer) {
+            addStudentBtn.addEventListener('click', () => {
+                studentFormContainer.style.display = 'block';
+
+                const nameInput = document.getElementById('student-name');
+                if (nameInput) {
+                    nameInput.focus();
+                }
+            });
+        }
+
+        if (!form) return;
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('student-name').value.trim();
+            const grade = document.getElementById('student-grade').value.trim();
+            const phone = document.getElementById('student-phone').value.trim();
+
+            if (!name || !grade || !phone) {
+                alert('Please fill in all student details.');
+                return;
+            }
+
+            const student = {
+                id: Date.now(),
+                name: name,
+                grade: grade,
+                phone: phone
+            };
+
+            State.addStudent(student);
+
+            form.reset();
+
+            this.renderStudents();
+
+            alert('Student saved successfully!');
+        });
+    },
+
+    // Render student list
+    renderStudents() {
+        const list = document.getElementById('students-list');
+
+        if (!list) return;
+
+        if (State.students.length === 0) {
+            list.innerHTML = '<p>No students added yet.</p>';
+            return;
+        }
+
+        list.innerHTML = State.students.map(student => `
+        <div class="student-card">
+            <h3>${student.name}</h3>
+            <p><strong>Grade:</strong> ${student.grade}</p>
+            <p><strong>Phone:</strong> ${student.phone}</p>
+        </div>
+    `).join('');
+    },
     // 13. TUTORIALS MODULE
     bindTutorialsEvents() {
-        const fileInput  = document.getElementById('tute-file-input');
-        const dropZone   = document.getElementById('tute-drop-zone');
+        const fileInput = document.getElementById('tute-file-input');
+        const dropZone = document.getElementById('tute-drop-zone');
         const browseTrig = document.getElementById('tute-browse-trigger');
-        const form       = document.getElementById('tute-upload-form');
+        const form = document.getElementById('tute-upload-form');
 
         // Browse trigger clicks the hidden input
         browseTrig.addEventListener('click', () => fileInput.click());
@@ -827,15 +896,15 @@ const App = {
 
     // Admin: read file as DataURL then persist to State.tutorials
     _uploadTutorial() {
-        const type    = document.getElementById('tute-type').value;
-        const title   = document.getElementById('tute-title').value.trim();
-        const category= document.getElementById('tute-category').value;
-        const desc    = document.getElementById('tute-description').value.trim();
-        const file    = this._pendingTuteFile;
-        const feedback= document.getElementById('tute-upload-feedback');
+        const type = document.getElementById('tute-type').value;
+        const title = document.getElementById('tute-title').value.trim();
+        const category = document.getElementById('tute-category').value;
+        const desc = document.getElementById('tute-description').value.trim();
+        const file = this._pendingTuteFile;
+        const feedback = document.getElementById('tute-upload-feedback');
 
         if (!title) { this._tuteFeedback('Please enter a title.', false); return; }
-        if (!file)  { this._tuteFeedback('Please select a file to upload.', false); return; }
+        if (!file) { this._tuteFeedback('Please select a file to upload.', false); return; }
 
         // Disable submit while reading
         const btn = document.getElementById('tute-upload-btn');
@@ -854,7 +923,7 @@ const App = {
                 fileSize: file.size,
                 fileType: file.name.split('.').pop().toLowerCase(),
                 dataUrl: e.target.result,
-                uploadedAt: new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })
+                uploadedAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
             };
 
             State.tutorials.unshift(tutorial); // newest first
@@ -902,7 +971,7 @@ const App = {
 
     _renderTuteGrid() {
         const grid = document.getElementById('tutorials-grid');
-        const empty= document.getElementById('tute-empty-state');
+        const empty = document.getElementById('tute-empty-state');
         const catFilter = State.activeTuteFilter;
         const typeFilter = State.activeTuteTypeFilter;
 
@@ -927,8 +996,8 @@ const App = {
         filtered.forEach(t => {
             const iconClass = this._tuteIconClass(t.fileType);
             const iconLabel = t.fileType.toUpperCase();
-            const sizeStr   = this._formatBytes(t.fileSize);
-            const itemType  = t.type || 'Tutorial';
+            const sizeStr = this._formatBytes(t.fileSize);
+            const itemType = t.type || 'Tutorial';
             const typeBadgeClass = itemType === 'Paper' ? 'badge-paper' : 'badge-tutorial';
 
             const card = document.createElement('div');
@@ -998,9 +1067,9 @@ const App = {
     // Determine CSS class for file icon based on extension
     _tuteIconClass(ext) {
         if (ext === 'pdf') return 'pdf';
-        if (['doc','docx'].includes(ext)) return 'doc';
+        if (['doc', 'docx'].includes(ext)) return 'doc';
         if (ext === 'txt') return 'txt';
-        if (['ppt','pptx'].includes(ext)) return 'ppt';
+        if (['ppt', 'pptx'].includes(ext)) return 'ppt';
         return 'other';
     },
 
@@ -1068,7 +1137,7 @@ const App = {
 
         State.zoomClasses.forEach(z => {
             const isLive = z.status === 'LIVE NOW';
-            const statusBadge = isLive 
+            const statusBadge = isLive
                 ? `<span class="zoom-badge-status status-live"><span class="pulse-ring"></span> LIVE NOW</span>`
                 : `<span class="zoom-badge-status status-upcoming">ðŸ•’ ${z.time.split('|')[0] || 'Upcoming'}</span>`;
 
@@ -1294,9 +1363,9 @@ const App = {
 
         const filtered = State.recordings.filter(r => {
             const matchesCat = State.activeRecFilter === 'All' || r.category === State.activeRecFilter;
-            const matchesSearch = !State.recSearchQuery || 
-                r.title.toLowerCase().includes(State.recSearchQuery) || 
-                r.category.toLowerCase().includes(State.recSearchQuery) || 
+            const matchesSearch = !State.recSearchQuery ||
+                r.title.toLowerCase().includes(State.recSearchQuery) ||
+                r.category.toLowerCase().includes(State.recSearchQuery) ||
                 r.desc.toLowerCase().includes(State.recSearchQuery);
             return matchesCat && matchesSearch;
         });
