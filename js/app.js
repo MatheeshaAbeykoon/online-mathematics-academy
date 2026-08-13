@@ -799,8 +799,35 @@ const App = {
 
             alert('Student saved successfully!');
         });
-    },
 
+        // Delete student
+        const studentList = document.getElementById('students-list');
+
+        if (studentList) {
+            studentList.addEventListener('click', (e) => {
+                const button = e.target.closest('.delete-student-btn');
+
+                if (!button) return;
+
+                const studentId = button.getAttribute('data-id');
+
+                const confirmed = confirm(
+                    'Are you sure you want to delete this student?'
+                );
+
+                if (!confirmed) return;
+
+                State.students = State.students.filter(
+                    student => String(student.id) !== String(studentId)
+                );
+
+                State.save();
+                this.renderStudents();
+
+                alert('Student deleted successfully!');
+            });
+        }
+    },   // ← bindStudentEvents() close
     // Render student list
     renderStudents() {
         const list = document.getElementById('students-list');
@@ -811,14 +838,23 @@ const App = {
             list.innerHTML = '<p>No students added yet.</p>';
             return;
         }
-
         list.innerHTML = State.students.map(student => `
-        <div class="student-card">
-            <h3>${student.name}</h3>
-            <p><strong>Grade:</strong> ${student.grade}</p>
-            <p><strong>Phone:</strong> ${student.phone}</p>
+    <div class="student-card">
+        <h3>${student.name}</h3>
+        <p><strong>Grade:</strong> ${student.grade}</p>
+        <p><strong>Phone:</strong> ${student.phone}</p>
+
+        <div class="student-actions">
+            <button type="button" class="edit-student-btn" data-id="${student.id}">
+                Edit
+            </button>
+
+            <button type="button" class="delete-student-btn" data-id="${student.id}">
+                Delete
+            </button>
         </div>
-    `).join('');
+    </div>
+`).join('');
     },
     // 13. TUTORIALS MODULE
     bindTutorialsEvents() {
