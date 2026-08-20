@@ -763,6 +763,12 @@ const App = {
             addStudentBtn.addEventListener('click', () => {
                 studentFormContainer.style.display = 'block';
 
+                console.log(
+                    'FORM DISPLAY:',
+                    studentFormContainer.style.display,
+                    studentFormContainer
+                );
+
                 const nameInput = document.getElementById('student-name');
                 if (nameInput) {
                     nameInput.focus();
@@ -784,20 +790,39 @@ const App = {
                 return;
             }
 
-            const student = {
-                id: Date.now(),
-                name: name,
-                grade: grade,
-                phone: phone
-            };
+            const editingId = form.dataset.editingId;
 
-            State.addStudent(student);
+            if (editingId) {
+                const student = State.students.find(
+                    student => String(student.id) === String(editingId)
+                );
 
+                if (student) {
+                    student.name = name;
+                    student.grade = grade;
+                    student.phone = phone;
+                }
+
+                delete form.dataset.editingId;
+
+                alert('Student updated successfully!');
+            } else {
+                const student = {
+                    id: Date.now(),
+                    name: name,
+                    grade: grade,
+                    phone: phone
+                };
+
+                State.addStudent(student);
+
+                alert('Student saved successfully!');
+            }
             form.reset();
 
             this.renderStudents();
 
-            alert('Student saved successfully!');
+
         });
 
         // Delete student
@@ -825,6 +850,34 @@ const App = {
                 this.renderStudents();
 
                 alert('Student deleted successfully!');
+            });
+            // Edit student
+            studentList.addEventListener('click', (e) => {
+                console.log('REAL EDIT HANDLER');
+                const button = e.target.closest('.edit-student-btn');
+
+                if (!button) return;
+
+                const studentId = button.getAttribute('data-id');
+
+                form.dataset.editingId = studentId;
+
+                const student = State.students.find(
+                    student => String(student.id) === String(studentId)
+                );
+                console.log('FOUND STUDENT:', student);
+
+                if (!student) return;
+                studentFormContainer.style.display = 'block';
+
+                document.getElementById('student-name').value = student.name;
+                document.getElementById('student-grade').value = student.grade;
+                document.getElementById('student-phone').value = student.phone;
+                console.log('FORM VALUES:', {
+                    name: document.getElementById('student-name').value,
+                    grade: document.getElementById('student-grade').value,
+                    phone: document.getElementById('student-phone').value
+                });
             });
         }
     },   // ← bindStudentEvents() close
